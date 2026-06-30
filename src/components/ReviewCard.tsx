@@ -35,9 +35,6 @@ export default function ReviewCard({ name, date, rating, body }: ReviewCardProps
       <p className="font-sans text-sm text-on-surface-variant mb-4 flex-grow leading-relaxed">
         "{body}"
       </p>
-      <span className="text-primary-container font-sans font-semibold text-xs cursor-pointer hover:underline">
-        Read more
-      </span>
     </div>
   );
 }

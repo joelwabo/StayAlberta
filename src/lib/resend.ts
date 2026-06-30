@@ -35,7 +35,7 @@ export async function sendInquiryEmail(inquiry: EmailInquiry): Promise<{ success
     try {
       const response = await resend.emails.send({
         from: "StayAlberta Inquiry <onboarding@resend.dev>",
-        to: "stayalberta-leads@yopmail.com", // Fallback lead receiver or user email
+        to: "hrodricestate@gmail.com",
         subject: `New StayAlberta Inquiry - ${inquiry.company} (${inquiry.city})`,
         html: emailHtml,
       });

@@ -367,7 +367,7 @@ function InquiryFormContent() {
         <div className="max-w-container-max mx-auto px-margin-desktop text-center">
           <h3 className="font-serif text-headline-md text-primary mb-4">Prefer to talk?</h3>
           <p className="text-sm text-on-surface-variant mb-6">
-            Call our corporate desk at +1 (403) 555-0192 for immediate assistance.
+            Call our corporate desk at +1 (403) 971-9188 for immediate assistance.
           </p>
           <div className="flex justify-center gap-4">
             <button className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer">

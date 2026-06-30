@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
-import { getPropertyBySlug } from "@/lib/sanity";
+import { getPropertyBySlug, STANDARD_AMENITIES } from "@/lib/sanity";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -90,7 +90,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                   location_on
                 </span>
                 <span>
-                  {property.neighborhood}, Alberta · Close to key business zones
+                  {property.address || property.neighborhood}, Alberta · Close to key business zones
                 </span>
               </div>
             </header>
@@ -159,16 +159,22 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                 Amenities
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                {property.amenities.map((amenity, idx) => {
+                {[
+                  ...STANDARD_AMENITIES,
+                  ...(property.amenities || [])
+                ].map((amenity, idx) => {
                   let iconName = "check_circle";
-                  if (amenity.toLowerCase().includes("wifi")) iconName = "wifi";
-                  else if (amenity.toLowerCase().includes("workspace")) iconName = "laptop_mac";
-                  else if (amenity.toLowerCase().includes("laundry")) iconName = "local_laundry_service";
-                  else if (amenity.toLowerCase().includes("parking")) iconName = "directions_car";
-                  else if (amenity.toLowerCase().includes("a/c") || amenity.toLowerCase().includes("hvac")) iconName = "ac_unit";
-                  else if (amenity.toLowerCase().includes("tv") || amenity.toLowerCase().includes("netflix")) iconName = "smart_display";
-                  else if (amenity.toLowerCase().includes("kitchen")) iconName = "skillet";
-                  else if (amenity.toLowerCase().includes("gym") || amenity.toLowerCase().includes("fitness")) iconName = "fitness_center";
+                  const lower = amenity.toLowerCase();
+                  if (lower.includes("wifi") || lower.includes("internet")) iconName = "wifi";
+                  else if (lower.includes("workspace") || lower.includes("desk")) iconName = "laptop_mac";
+                  else if (lower.includes("laundry") || lower.includes("washer") || lower.includes("dryer")) iconName = "local_laundry_service";
+                  else if (lower.includes("parking") || lower.includes("garage")) iconName = "local_parking";
+                  else if (lower.includes("a/c") || lower.includes("ac ") || lower.includes("air cond") || lower.includes("hvac")) iconName = "ac_unit";
+                  else if (lower.includes("tv") || lower.includes("netflix") || lower.includes("display")) iconName = "smart_display";
+                  else if (lower.includes("kitchen") || lower.includes("cook")) iconName = "skillet";
+                  else if (lower.includes("gym") || lower.includes("fitness")) iconName = "fitness_center";
+                  else if (lower.includes("charger") || lower.includes("ev ")) iconName = "ev_station";
+                  else if (lower.includes("patio") || lower.includes("balcony") || lower.includes("terrace")) iconName = "deck";
 
                   return (
                     <div key={idx} className="flex items-center gap-4">
@@ -296,11 +302,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               {/* Host Info */}
               <div className="mt-8 flex items-center gap-4 pt-6 border-t border-outline-variant/30 font-sans">
                 <div className="w-12 h-12 bg-primary-fixed text-primary-container rounded-sm flex items-center justify-center font-bold text-lg hairline-border shadow-sm">
-                  JD
+                  JW
                 </div>
                 <div>
                   <div className="font-sans font-semibold text-xs text-primary-container uppercase tracking-wider">
-                    Joel D. · StayAlberta
+                    Joel W. · StayAlberta
                   </div>
                   <div className="text-xs text-on-surface-variant italic mt-0.5">
                     Responds within 4 hours

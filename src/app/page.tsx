@@ -2,6 +2,7 @@ import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
 import ReviewCard from "@/components/ReviewCard";
 import Footer from "@/components/Footer";
+import SearchBar from "@/components/SearchBar";
 import { getProperties } from "@/lib/sanity";
 
 export const revalidate = 60; // Revalidate every minute
@@ -40,23 +41,16 @@ export default async function Home() {
   return (
     <>
       <main className="flex-grow">
-        {/* Hero Section: Split Layout with Video */}
+        {/* Hero Section: Split Layout with Image */}
         <section className="relative overflow-hidden min-h-[600px] flex items-center bg-surface-container-low">
-          {/* Video Background Layer */}
+          {/* Image Background Layer */}
           <div className="absolute inset-0 z-0">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              alt="Calgary skyline"
               className="w-full h-full object-cover"
-              poster="https://lh3.googleusercontent.com/aida-public/AB6AXuA2Rv5MerRxx9_0OLECwyYIR22pYRTSTCkShGnrMELdXRKp_3t-Y8dz2F0NS6kpcpZA0rd-Pkhw36Qc34gt31SBFrQLgk5yl0LeBTlWk7UqOXskJSzuepyoxz75mdPzRRqHUnifxLueLBv8zsQVTgo_NZTkMAaADN6PCSFuCSe-dEUpHn5lnFW_Ld0yhX26tdNfubg465tDJSnq-AWfsMHQFh5aAiAfsiq4z2zj_7Go2WBHt--UZ1Aw6BWbY1syT7KGgL25fQdWRQ"
-            >
-              <source
-                src="https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                type="video/mp4"
-              />
-            </video>
+              src="/images/calgary_skyline.jpg"
+            />
             {/* Fade Overlay for Content Legibility */}
             <div className="absolute inset-0 video-overlay" />
           </div>
@@ -74,41 +68,7 @@ export default async function Home() {
                 </p>
                 
                 {/* GET Search Bar */}
-                <form
-                  action="/properties"
-                  method="GET"
-                  className="bg-surface-container-lowest hairline-border p-2 flex flex-col md:flex-row gap-2 mt-8 shadow-sm rounded-sm"
-                >
-                  <div className="flex-1 flex items-center px-4 gap-3">
-                    <span className="material-symbols-outlined text-primary-container select-none">
-                      location_on
-                    </span>
-                    <input
-                      name="city"
-                      type="text"
-                      className="w-full border-none focus:ring-0 focus:outline-none font-sans text-sm text-on-surface bg-transparent"
-                      placeholder="Where in Alberta?"
-                    />
-                  </div>
-                  <div className="w-px bg-outline-variant hidden md:block my-2" />
-                  <div className="flex-grow flex items-center px-4 gap-3">
-                    <span className="material-symbols-outlined text-primary-container select-none">
-                      calendar_today
-                    </span>
-                    <input
-                      name="checkin"
-                      type="text"
-                      className="w-full border-none focus:ring-0 focus:outline-none font-sans text-sm text-on-surface bg-transparent"
-                      placeholder="Check-in Date"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-primary-container text-white px-8 py-3.5 font-sans font-semibold text-xs uppercase tracking-widest hover:bg-primary transition-colors cursor-pointer"
-                  >
-                    Browse Properties
-                  </button>
-                </form>
+                <SearchBar />
 
                 {/* Trust Factors */}
                 <div className="flex flex-wrap gap-6 pt-4">
@@ -158,7 +118,7 @@ export default async function Home() {
           <div className="max-w-container-max mx-auto px-margin-page">
             <div className="grid grid-cols-2 md:grid-cols-6 gap-8 text-center items-center">
               <div className="md:col-span-1 border-r border-outline-variant hidden md:block">
-                <p className="font-serif text-headline-md text-primary font-bold">14</p>
+                <p className="font-serif text-headline-md text-primary font-bold">{properties.length}</p>
                 <p className="font-sans text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">
                   Properties
                 </p>
@@ -212,7 +172,7 @@ export default async function Home() {
               href="/properties"
               className="font-sans font-semibold text-xs uppercase tracking-wider text-primary-container flex items-center gap-2 hover:underline shrink-0"
             >
-              View All 14 Properties{" "}
+              View All {properties.length} Properties{" "}
               <span className="material-symbols-outlined text-[16px] select-none">
                 arrow_forward
               </span>
@@ -226,7 +186,7 @@ export default async function Home() {
         </section>
 
         {/* Solutions Section */}
-        <section className="bg-surface-container-low py-section-gap border-y-[0.5px] border-outline-variant">
+        <section id="why-us" className="scroll-mt-24 bg-surface-container-low py-section-gap border-y-[0.5px] border-outline-variant">
           <div className="max-w-container-max mx-auto px-margin-page">
             <div className="mb-16 text-center">
               <p className="font-sans font-semibold text-xs uppercase text-primary-container tracking-widest mb-4">
@@ -331,7 +291,7 @@ export default async function Home() {
             </div>
 
             {/* Process Steps */}
-            <div className="pt-24 border-t border-outline-variant/30">
+            <div id="how-it-works" className="scroll-mt-24 pt-24 border-t border-outline-variant/30">
               <div className="mb-16 text-center">
                 <p className="font-sans font-semibold text-xs uppercase text-primary-container tracking-widest mb-4">
                   PROCESS
@@ -426,7 +386,7 @@ export default async function Home() {
                     </span>
                   ))}
                 </div>
-                <span className="font-sans text-body-md text-on-surface-variant">(575)</span>
+                <span className="font-sans text-body-md text-on-surface-variant">(127)</span>
               </div>
             </div>
 

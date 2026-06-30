@@ -1,122 +1,154 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
 interface MapProps {
   selectedCity: string;
   onSelectCity: (city: string) => void;
 }
 
+const CITIES = [
+  { name: "Edmonton", coords: [53.5461, -113.4938] as [number, number], type: "major" },
+  { name: "Red Deer", coords: [52.2681, -113.8112] as [number, number], type: "major" },
+  { name: "Penhold", coords: [52.1378, -113.8617] as [number, number], type: "minor" },
+  { name: "Sylvan Lake", coords: [52.3083, -113.9833] as [number, number], type: "minor" },
+  { name: "Calgary", coords: [51.0447, -114.0719] as [number, number], type: "major" },
+];
+
 export default function Map({ selectedCity, onSelectCity }: MapProps) {
-  const cities = [
-    { name: "Edmonton", top: "20%", left: "45%", type: "major" },
-    { name: "Red Deer", top: "45%", left: "42%", type: "major" },
-    { name: "Penhold", top: "48%", left: "46%", type: "minor" },
-    { name: "Sylvan Lake", top: "43%", left: "35%", type: "minor" },
-    { name: "Calgary", top: "70%", left: "40%", type: "major" },
-  ];
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<Record<string, L.Marker>>({});
+
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    // Initialize Leaflet Map centered on central Alberta
+    const map = L.map(mapContainerRef.current, {
+      center: [52.35, -114.0],
+      zoom: 6.5,
+      zoomControl: false, // Custom styled controls are rendered on top
+      attributionControl: false,
+    });
+
+    mapRef.current = map;
+
+    // Add a premium, minimal, light grey map theme (CartoDB Positron)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: "abcd",
+      maxZoom: 20,
+    }).addTo(map);
+
+    // Render city markers
+    CITIES.forEach((city) => {
+      const isSelected = selectedCity.toLowerCase() === city.name.toLowerCase();
+
+      const icon = L.divIcon({
+        className: "custom-div-icon",
+        html: createMarkerHtml(city.name, city.type, isSelected),
+        iconSize: city.type === "major" ? [120, 42] : [100, 30],
+        iconAnchor: city.type === "major" ? [60, 42] : [50, 30],
+      });
+
+      const marker = L.marker(city.coords, { icon }).addTo(map);
+      markersRef.current[city.name] = marker;
+
+      // Handle marker click
+      marker.on("click", () => {
+        onSelectCity(city.name);
+      });
+    });
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update marker styles and zoom level when selectedCity changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    CITIES.forEach((city) => {
+      const marker = markersRef.current[city.name];
+      if (marker) {
+        const isSelected = selectedCity.toLowerCase() === city.name.toLowerCase();
+        const icon = L.divIcon({
+          className: "custom-div-icon",
+          html: createMarkerHtml(city.name, city.type, isSelected),
+          iconSize: city.type === "major" ? [120, 42] : [100, 30],
+          iconAnchor: city.type === "major" ? [60, 42] : [50, 30],
+        });
+        marker.setIcon(icon);
+      }
+    });
+
+    const activeCity = CITIES.find((c) => c.name.toLowerCase() === selectedCity.toLowerCase());
+    if (activeCity && mapRef.current) {
+      mapRef.current.setView(activeCity.coords, 9, { animate: true, duration: 1 });
+    } else if (selectedCity === "All" && mapRef.current) {
+      mapRef.current.setView([52.35, -114.0], 6.5, { animate: true, duration: 1 });
+    }
+  }, [selectedCity]);
+
+  const handleZoomIn = () => {
+    mapRef.current?.zoomIn();
+  };
+
+  const handleZoomOut = () => {
+    mapRef.current?.zoomOut();
+  };
+
+  const handleRecenter = () => {
+    mapRef.current?.setView([52.35, -114.0], 6.5, { animate: true });
+  };
 
   return (
-    <div className="absolute inset-0 bg-[#e5e7eb] overflow-hidden flex flex-col justify-between">
-      {/* Grid Overlay for "Map" Feel */}
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(#4d6453 1px, transparent 1px), linear-gradient(90deg, #4d6453 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }}
-      />
+    <div className="absolute inset-0 bg-[#f9faf8] overflow-hidden flex flex-col justify-between">
+      {/* Leaflet Mount Node */}
+      <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full" />
 
       {/* Map Zoom UI Controls */}
-      <div className="absolute top-6 right-6 flex flex-col gap-2 z-10">
-        <button className="bg-surface shadow-md p-2 rounded-sm hover:bg-surface-container-low transition-colors">
-          <span className="material-symbols-outlined select-none">add</span>
+      <div className="absolute top-6 right-6 flex flex-col gap-2 z-10 font-sans">
+        <button
+          type="button"
+          onClick={handleZoomIn}
+          className="bg-white shadow-md w-10 h-10 flex items-center justify-center rounded-sm hover:bg-surface-container-low transition-colors border border-outline-variant cursor-pointer"
+        >
+          <span className="material-symbols-outlined select-none text-primary">add</span>
         </button>
-        <button className="bg-surface shadow-md p-2 rounded-sm hover:bg-surface-container-low transition-colors">
-          <span className="material-symbols-outlined select-none">remove</span>
+        <button
+          type="button"
+          onClick={handleZoomOut}
+          className="bg-white shadow-md w-10 h-10 flex items-center justify-center rounded-sm hover:bg-surface-container-low transition-colors border border-outline-variant cursor-pointer"
+        >
+          <span className="material-symbols-outlined select-none text-primary">remove</span>
         </button>
-        <button className="bg-surface shadow-md p-2 rounded-sm hover:bg-surface-container-low mt-4 transition-colors">
-          <span className="material-symbols-outlined select-none">my_location</span>
+        <button
+          type="button"
+          onClick={handleRecenter}
+          className="bg-white shadow-md w-10 h-10 flex items-center justify-center rounded-sm hover:bg-surface-container-low mt-4 transition-colors border border-outline-variant cursor-pointer"
+        >
+          <span className="material-symbols-outlined select-none text-primary">my_location</span>
         </button>
-      </div>
-
-      {/* Alberta Landmass Shape (SVG for Atmosphere) */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-5 grayscale pointer-events-none"
-        fill="currentColor"
-        viewBox="0 0 1000 1000"
-      >
-        <path d="M400,100 L600,100 L650,400 L620,900 L380,900 L350,400 Z" />
-      </svg>
-
-      {/* Interactive City Markers */}
-      <div className="absolute inset-0 pointer-events-none">
-        {cities.map((city) => {
-          const isSelected = selectedCity.toLowerCase() === city.name.toLowerCase();
-          
-          if (city.type === "major") {
-            return (
-              <div
-                key={city.name}
-                className="absolute pointer-events-auto cursor-pointer group transition-transform duration-200 hover:scale-110"
-                style={{ top: city.top, left: city.left }}
-                onClick={() => onSelectCity(city.name)}
-              >
-                <div
-                  className={`px-3 py-1 font-sans font-bold text-xs rounded shadow-lg flex items-center gap-1 transition-all duration-300 ${
-                    isSelected
-                      ? "bg-brand-gold-champagne text-white scale-105 border border-white"
-                      : "bg-primary text-on-primary group-hover:bg-primary-container"
-                  }`}
-                >
-                  <span
-                    className="material-symbols-outlined text-sm select-none"
-                    style={{ fontVariationSettings: '"FILL" 1' }}
-                  >
-                    push_pin
-                  </span>
-                  {city.name}
-                </div>
-                <div
-                  className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] mx-auto transition-colors ${
-                    isSelected ? "border-t-brand-gold-champagne" : "border-t-primary group-hover:border-t-primary-container"
-                  }`}
-                />
-              </div>
-            );
-          } else {
-            // Minor nodes
-            return (
-              <div
-                key={city.name}
-                className="absolute pointer-events-auto cursor-pointer group transition-all duration-200 hover:scale-105"
-                style={{ top: city.top, left: city.left }}
-                onClick={() => onSelectCity(city.name)}
-              >
-                <div
-                  className={`px-2.5 py-1 text-[10px] font-sans font-bold uppercase tracking-wider rounded-full shadow-md border transition-all duration-300 ${
-                    isSelected
-                      ? "bg-brand-gold-champagne text-white border-white scale-105"
-                      : "bg-primary-container text-on-primary-container border-primary group-hover:bg-primary group-hover:text-white"
-                  }`}
-                >
-                  {city.name}
-                </div>
-              </div>
-            );
-          }
-        })}
       </div>
 
       {/* Legend & Summary Box */}
-      <div className="absolute bottom-6 left-6 right-6 bg-surface/90 backdrop-blur-md p-4 rounded border border-outline-variant shadow-2xl z-10">
+      <div className="absolute bottom-6 left-6 right-6 bg-surface/90 backdrop-blur-md p-4 rounded border border-outline-variant shadow-2xl z-10 font-sans pointer-events-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="font-serif text-md text-primary font-semibold">
+            <h4 className="font-serif text-sm text-primary font-semibold">
               Alberta Corporate Reach
             </h4>
             <p className="text-[10px] font-sans text-on-surface-variant uppercase tracking-wider">
               {selectedCity === "All"
-                ? "Click a location marker to filter suites"
+                ? "Click a map pin to filter suites"
                 : `Showing suites in ${selectedCity}`}
             </p>
           </div>
@@ -134,4 +166,39 @@ export default function Map({ selectedCity, onSelectCity }: MapProps) {
       </div>
     </div>
   );
+}
+
+function createMarkerHtml(name: string, type: string, isSelected: boolean): string {
+  if (type === "major") {
+    // Styled pins matching StayAlberta
+    const bgClass = isSelected
+      ? "bg-brand-gold-champagne text-white border-white scale-105"
+      : "bg-primary text-white border-primary hover:bg-primary-container";
+    const arrowBorderClass = isSelected ? "border-t-brand-gold-champagne" : "border-t-primary";
+
+    return `
+      <div class="flex flex-col items-center">
+        <div class="px-3 py-1.5 font-sans font-bold text-xs rounded shadow-lg flex items-center gap-1 border transition-all duration-300 ${bgClass}">
+          <span class="material-symbols-outlined text-sm select-none" style="font-variation-settings: 'FILL' 1">
+            push_pin
+          </span>
+          <span>${name}</span>
+        </div>
+        <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] mx-auto transition-colors ${arrowBorderClass}"></div>
+      </div>
+    `;
+  } else {
+    // Minor nodes (Penhold, Sylvan Lake)
+    const bgClass = isSelected
+      ? "bg-brand-gold-champagne text-white border-white scale-105"
+      : "bg-primary-container text-on-primary-container border-primary hover:bg-primary hover:text-white";
+
+    return `
+      <div class="flex justify-center">
+        <div class="px-2.5 py-1.5 text-[10px] font-sans font-bold uppercase tracking-wider rounded shadow-md border transition-all duration-300 ${bgClass}">
+          ${name}
+        </div>
+      </div>
+    `;
+  }
 }

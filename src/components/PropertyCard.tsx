@@ -1,8 +1,23 @@
 import Link from "next/link";
-import { Property } from "@/lib/sanity";
+import { Property, STANDARD_AMENITIES } from "@/lib/sanity";
 
 interface PropertyCardProps {
   property: Property;
+}
+
+function getAmenityIcon(amenity: string): string {
+  const lower = amenity.toLowerCase();
+  if (lower.includes("wifi") || lower.includes("internet")) return "wifi";
+  if (lower.includes("workspace") || lower.includes("desk")) return "laptop_mac";
+  if (lower.includes("laundry") || lower.includes("washer") || lower.includes("dryer")) return "local_laundry_service";
+  if (lower.includes("parking") || lower.includes("garage")) return "local_parking";
+  if (lower.includes("a/c") || lower.includes("ac ") || lower.includes("air cond") || lower.includes("hvac")) return "ac_unit";
+  if (lower.includes("tv") || lower.includes("netflix") || lower.includes("display")) return "smart_display";
+  if (lower.includes("kitchen") || lower.includes("cook")) return "skillet";
+  if (lower.includes("gym") || lower.includes("fitness")) return "fitness_center";
+  if (lower.includes("charger") || lower.includes("ev ")) return "ev_station";
+  if (lower.includes("patio") || lower.includes("balcony") || lower.includes("terrace")) return "deck";
+  return "check_circle";
 }
 
 export default function PropertyCard({ property }: PropertyCardProps) {
@@ -10,6 +25,53 @@ export default function PropertyCard({ property }: PropertyCardProps) {
   const formattedPrice = isMonthly
     ? `$${property.price.toLocaleString()}/mo`
     : `$${property.price}/night`;
+
+  // Find up to 2 amenities to display dynamically
+  const displayAmenities: { text: string; icon: string }[] = [];
+  
+  const amenitiesList = [
+    ...STANDARD_AMENITIES,
+    ...(property.amenities || [])
+  ];
+
+  // 1. Try to find a WiFi amenity
+  const wifiAmenity = amenitiesList.find(
+    (a) => a.toLowerCase().includes("wifi") || a.toLowerCase().includes("internet")
+  );
+  if (wifiAmenity) {
+    displayAmenities.push({ text: wifiAmenity, icon: "wifi" });
+  }
+
+  // 2. Try to find a Parking / EV Charger amenity
+  const parkingAmenity = amenitiesList.find(
+    (a) =>
+      a.toLowerCase().includes("parking") ||
+      a.toLowerCase().includes("garage") ||
+      a.toLowerCase().includes("charger") ||
+      a.toLowerCase().includes("ev ")
+  );
+  if (parkingAmenity) {
+    displayAmenities.push({
+      text: parkingAmenity,
+      icon: parkingAmenity.toLowerCase().includes("charger") ? "ev_station" : "local_parking",
+    });
+  }
+
+  // 3. If we don't have 2 amenities yet, fill in with others
+  for (const amenity of amenitiesList) {
+    if (displayAmenities.length >= 2) break;
+    if (displayAmenities.some((d) => d.text === amenity)) continue;
+    displayAmenities.push({ text: amenity, icon: getAmenityIcon(amenity) });
+  }
+
+  // 4. Fallbacks
+  while (displayAmenities.length < 2) {
+    if (displayAmenities.length === 0) {
+      displayAmenities.push({ text: "Fibre WiFi", icon: "wifi" });
+    } else {
+      displayAmenities.push({ text: "Heated Parking", icon: "local_parking" });
+    }
+  }
 
   return (
     <div className="bg-surface-container-lowest border-[0.5px] border-outline-variant rounded-md overflow-hidden hover:shadow-ambient hover:scale-[1.01] transition-all duration-300 group cursor-pointer flex flex-col h-full">
@@ -36,27 +98,35 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <p className="font-sans text-sm text-on-surface-variant mb-6">
           {property.neighborhood}
         </p>
-        
+
         {/* Metadata Details */}
         <div className="grid grid-cols-2 gap-4 border-t border-outline-variant/30 pt-4 mt-auto">
-          <div className="flex items-center gap-2 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[18px]">bed</span>
-            <span className="font-sans text-sm">{property.bedrooms} Bedrooms</span>
-          </div>
-          <div className="flex items-center gap-2 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[18px]">bathtub</span>
-            <span className="font-sans text-sm">{property.bathrooms} Baths</span>
-          </div>
-          <div className="flex items-center gap-2 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[18px]">wifi</span>
-            <span className="font-sans text-sm">Fibre WiFi</span>
-          </div>
-          <div className="flex items-center gap-2 text-on-surface-variant">
-            <span className="material-symbols-outlined text-[18px]">
-              {property.city === "Calgary" ? "local_parking" : "ev_station"}
+          <div className="flex items-center gap-2 text-on-surface-variant min-w-0">
+            <span className="material-symbols-outlined text-[18px] shrink-0">bed</span>
+            <span className="font-sans text-sm truncate" title={`${property.bedrooms} Bedrooms`}>
+              {property.bedrooms} Bedrooms
             </span>
-            <span className="font-sans text-sm">
-              {property.city === "Calgary" ? "Heated Parking" : "EV Charger"}
+          </div>
+          <div className="flex items-center gap-2 text-on-surface-variant min-w-0">
+            <span className="material-symbols-outlined text-[18px] shrink-0">bathtub</span>
+            <span className="font-sans text-sm truncate" title={`${property.bathrooms} Baths`}>
+              {property.bathrooms} Baths
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-on-surface-variant min-w-0">
+            <span className="material-symbols-outlined text-[18px] shrink-0">
+              {displayAmenities[0].icon}
+            </span>
+            <span className="font-sans text-sm truncate" title={displayAmenities[0].text}>
+              {displayAmenities[0].text}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-on-surface-variant min-w-0">
+            <span className="material-symbols-outlined text-[18px] shrink-0">
+              {displayAmenities[1].icon}
+            </span>
+            <span className="font-sans text-sm truncate" title={displayAmenities[1].text}>
+              {displayAmenities[1].text}
             </span>
           </div>
         </div>
