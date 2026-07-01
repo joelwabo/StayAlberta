@@ -157,15 +157,13 @@ export const sanityClient = client;
 
 // Clean fetch wrapper supporting transparent local fallback
 export async function getProperties(): Promise<Property[]> {
-  if (process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
-    try {
-      const data = await client.fetch(PROPERTIES_QUERY);
-      if (data && data.length > 0) {
-        return data as unknown as Property[];
-      }
-    } catch (error) {
-      console.warn("Sanity fetch failed, falling back to mock properties:", error);
+  try {
+    const data = await client.fetch(PROPERTIES_QUERY);
+    if (data && data.length > 0) {
+      return data as unknown as Property[];
     }
+  } catch (error) {
+    console.warn("Sanity fetch failed, falling back to mock properties:", error);
   }
   return mockProperties;
 }
