@@ -31,7 +31,6 @@ export type Property = {
   title?: string;
   slug?: Slug;
   city?: "Calgary" | "Edmonton" | "Red Deer" | "Penhold" | "Sylvan Lake";
-  neighborhood?: string;
   address?: string;
   price?: number;
   pricePeriod?: "night" | "month";
@@ -200,13 +199,12 @@ export type AllSanitySchemaTypes =
 
 // Source: ../StayAlberta/src/sanity/queries.ts
 // Variable: PROPERTIES_QUERY
-// Query: *[_type == "property" && isActive != false] {    "id": _id,    title,    "slug": slug.current,    city,    neighborhood,    address,    price,    pricePeriod,    bedrooms,    bathrooms,    sqft,    guests,    availableDate,    availableNow,    isActive,    tag,    description,    "images": images[].asset->url,    videoUrl,    "videoPoster": videoPoster.asset->url,    amenities,    idealFor  }
+// Query: *[_type == "property" && isActive != false] {    "id": _id,    title,    "slug": slug.current,    city,    address,    price,    pricePeriod,    bedrooms,    bathrooms,    sqft,    guests,    availableDate,    availableNow,    isActive,    tag,    description,    "images": images[].asset->url,    videoUrl,    "videoPoster": videoPoster.asset->url,    amenities,    idealFor  }
 export type PROPERTIES_QUERY_RESULT = Array<{
   id: string;
   title: string | null;
   slug: string | null;
   city: "Calgary" | "Edmonton" | "Penhold" | "Red Deer" | "Sylvan Lake" | null;
-  neighborhood: string | null;
   address: string | null;
   price: number | null;
   pricePeriod: "month" | "night" | null;
@@ -230,6 +228,6 @@ export type PROPERTIES_QUERY_RESULT = Array<{
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '\n  *[_type == "property" && isActive != false] {\n    "id": _id,\n    title,\n    "slug": slug.current,\n    city,\n    neighborhood,\n    address,\n    price,\n    pricePeriod,\n    bedrooms,\n    bathrooms,\n    sqft,\n    guests,\n    availableDate,\n    availableNow,\n    isActive,\n    tag,\n    description,\n    "images": images[].asset->url,\n    videoUrl,\n    "videoPoster": videoPoster.asset->url,\n    amenities,\n    idealFor\n  }\n': PROPERTIES_QUERY_RESULT;
+    '\n  *[_type == "property" && isActive != false] {\n    "id": _id,\n    title,\n    "slug": slug.current,\n    city,\n    address,\n    price,\n    pricePeriod,\n    bedrooms,\n    bathrooms,\n    sqft,\n    guests,\n    availableDate,\n    availableNow,\n    isActive,\n    tag,\n    description,\n    "images": images[].asset->url,\n    videoUrl,\n    "videoPoster": videoPoster.asset->url,\n    amenities,\n    idealFor\n  }\n': PROPERTIES_QUERY_RESULT;
   }
 }

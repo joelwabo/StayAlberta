@@ -34,25 +34,32 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
     const checkin = searchParams.get("checkin");
     
     if (city) {
-      const foundCity = ["calgary", "edmonton", "red deer", "penhold", "sylvan lake"].find(
-        (c) => c === city.toLowerCase()
-      );
-      if (foundCity) {
-        const displayCities: Record<string, string> = {
-          "calgary": "Calgary",
-          "edmonton": "Edmonton",
-          "red deer": "Red Deer",
-          "penhold": "Penhold",
-          "sylvan lake": "Sylvan Lake"
-        };
-        setCityFilter(displayCities[foundCity]);
-      }
+      const normalizedCity = city.toLowerCase();
+      // Format nicely (e.g. "red deer" -> "Red Deer")
+      const formattedCity = normalizedCity
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      setCityFilter(formattedCity);
     }
     
     if (checkin) {
       setCheckinDate(checkin);
     }
   }, [searchParams]);
+
+  // Get all unique cities dynamically for dropdown
+  const uniqueCitiesSet = new Set<string>();
+  const defaultCities = ["Calgary", "Edmonton", "Red Deer", "Penhold", "Sylvan Lake"];
+  defaultCities.forEach((c) => uniqueCitiesSet.add(c));
+  properties.forEach((p) => {
+    if (p.city && p.isActive !== false) {
+      const normalizedName =
+        defaultCities.find((dc) => dc.toLowerCase() === p.city.toLowerCase()) || p.city;
+      uniqueCitiesSet.add(normalizedName);
+    }
+  });
+  const selectCities = Array.from(uniqueCitiesSet);
 
   // Filter listings
   const filteredProperties = properties.filter((property) => {
@@ -111,11 +118,11 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
                 onChange={(e) => setCityFilter(e.target.value)}
               >
                 <option value="All">All Cities</option>
-                <option value="Calgary">Calgary</option>
-                <option value="Edmonton">Edmonton</option>
-                <option value="Red Deer">Red Deer</option>
-                <option value="Penhold">Penhold</option>
-                <option value="Sylvan Lake">Sylvan Lake</option>
+                {selectCities.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
               </select>
             </div>
             

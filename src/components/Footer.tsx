@@ -42,11 +42,19 @@ export default function Footer({ minimal = false }: FooterProps) {
 
   // Calculate counts dynamically based on active listings
   const activeProperties = properties.filter((p) => p.isActive !== false);
-  const calgaryCount = activeProperties.filter((p) => p.city?.toLowerCase() === "calgary").length;
-  const edmontonCount = activeProperties.filter((p) => p.city?.toLowerCase() === "edmonton").length;
-  const redDeerCount = activeProperties.filter((p) => p.city?.toLowerCase() === "red deer").length;
-  const penholdCount = activeProperties.filter((p) => p.city?.toLowerCase() === "penhold").length;
-  const sylvanLakeCount = activeProperties.filter((p) => p.city?.toLowerCase() === "sylvan lake").length;
+
+  // Generate unique list of cities combining standard ones and any new ones in the dataset
+  const defaultCities = ["Calgary", "Edmonton", "Red Deer", "Penhold", "Sylvan Lake"];
+  const citiesListSet = new Set<string>();
+  defaultCities.forEach((c) => citiesListSet.add(c));
+  activeProperties.forEach((p) => {
+    if (p.city) {
+      const normalizedCityName =
+        defaultCities.find((dc) => dc.toLowerCase() === p.city.toLowerCase()) || p.city;
+      citiesListSet.add(normalizedCityName);
+    }
+  });
+  const citiesList = Array.from(citiesListSet);
 
   return (
     <footer className="bg-surface-container-lowest border-t-[0.5px] border-outline-variant font-sans mt-auto text-center">
@@ -67,11 +75,20 @@ export default function Footer({ minimal = false }: FooterProps) {
             Portfolio
           </h4>
           <nav className="flex flex-col items-center gap-2 text-on-surface-variant text-body-md">
-            <span>Calgary ({calgaryCount})</span>
-            <span>Edmonton ({edmontonCount})</span>
-            <span>Red Deer ({redDeerCount})</span>
-            <span>Penhold ({penholdCount})</span>
-            <span>Sylvan Lake ({sylvanLakeCount})</span>
+            {citiesList.map((cityName) => {
+              const count = activeProperties.filter(
+                (p) => p.city?.toLowerCase() === cityName.toLowerCase()
+              ).length;
+              return (
+                <Link
+                  key={cityName}
+                  href={`/properties?city=${encodeURIComponent(cityName)}`}
+                  className="hover:underline hover:text-primary-container transition-colors"
+                >
+                  {cityName} ({count})
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="flex flex-col items-center text-center gap-4">

@@ -6,7 +6,6 @@ export const PROPERTIES_QUERY = defineQuery(`
     title,
     "slug": slug.current,
     city,
-    neighborhood,
     address,
     price,
     pricePeriod,

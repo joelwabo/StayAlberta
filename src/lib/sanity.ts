@@ -12,7 +12,7 @@ export interface Property {
   title: string;
   slug: string;
   city: string;
-  neighborhood: string;
+  neighborhood?: string;
   address?: string;
   price: number;
   pricePeriod: "night" | "month";
@@ -32,13 +32,45 @@ export interface Property {
   idealFor: string[];
 }
 
+export function getNeighborhoodFromAddress(property: { address?: string; city?: string }): string {
+  if (!property.address) {
+    return property.city || "Unknown Location";
+  }
+
+  const addr = property.address.toLowerCase();
+  const city = property.city || "";
+
+  // 1. Known mock / specific property patterns
+  if (addr.includes("10 ave sw") || addr.includes("beltline")) {
+    return "Calgary | Beltline District";
+  }
+  if (addr.includes("jasper ave") || addr.includes("t5j")) {
+    return "Downtown Edmonton | Institutional Core";
+  }
+  if (addr.includes("48 st") || addr.includes("t4n") || addr.includes("red deer")) {
+    if (addr.includes("48 st") && city.toLowerCase().includes("red deer")) {
+      return "Red Deer | Regional Hub";
+    }
+  }
+
+  // 2. Generic fallback parsing: City | Street (excluding leading street numbers)
+  const parts = property.address.split(",").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const street = parts[0];
+    const parsedCity = parts[1];
+    const district = street.replace(/^\d+\s+/, ""); // Remove leading digits for street number
+    return `${parsedCity} | ${district}`;
+  }
+
+  return property.city ? `${property.city} | Area` : "Alberta";
+}
+
 export const mockProperties: Property[] = [
   {
     id: "beltline-suite",
     title: "Beltline Executive Suite",
     slug: "beltline-executive-suite",
     city: "Calgary",
-    neighborhood: "Calgary | Beltline District",
     address: "123 10 Ave SW, Calgary, AB T2R 0B5",
     price: 3200,
     pricePeriod: "month",
@@ -71,7 +103,6 @@ export const mockProperties: Property[] = [
     title: "The Jasper Executive",
     slug: "the-jasper-executive",
     city: "Edmonton",
-    neighborhood: "Downtown Edmonton | Institutional Core",
     address: "10055 Jasper Ave, Edmonton, AB T5J 1R9",
     price: 145,
     pricePeriod: "night",
@@ -97,7 +128,6 @@ export const mockProperties: Property[] = [
     title: "Red Deer Terrace",
     slug: "red-deer-terrace",
     city: "Red Deer",
-    neighborhood: "Red Deer | Regional Hub",
     address: "4800 48 St, Red Deer, AB T4N 1S6",
     price: 125,
     pricePeriod: "night",

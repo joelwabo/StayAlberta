@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
-import { getPropertyBySlug, STANDARD_AMENITIES } from "@/lib/sanity";
+import { getPropertyBySlug, STANDARD_AMENITIES, getNeighborhoodFromAddress } from "@/lib/sanity";
+import PropertyGallery from "@/components/PropertyGallery";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -37,37 +38,12 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         </nav>
 
         {/* Hero Gallery */}
-        <section className="grid grid-cols-1 md:grid-cols-4 grid-rows-2 gap-4 h-[300px] md:h-[500px] mb-12 overflow-hidden">
-          <div className="md:col-span-3 md:row-span-2 relative group cursor-pointer overflow-hidden rounded-md hairline-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Main property view"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
-              src={property.images[0]}
-            />
-          </div>
-          <div className="hidden md:block relative group cursor-pointer overflow-hidden bg-surface-container rounded-md hairline-border">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Sub view 1"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              src={property.images[1] || property.images[0]}
-            />
-          </div>
-          <div className="hidden md:block relative group cursor-pointer overflow-hidden bg-surface-container rounded-md hairline-border">
-            <div className="absolute inset-0 flex items-center justify-center bg-primary-container/80 text-white z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="font-sans font-semibold text-xs uppercase tracking-widest">
-                +{property.images.length > 2 ? property.images.length - 2 : 0} More Photos
-              </span>
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              alt="Sub view 2"
-              className="w-full h-full object-cover"
-              src={property.images[2] || property.images[0]}
-            />
-          </div>
-        </section>
+        <PropertyGallery
+          images={property.images}
+          videoUrl={property.videoUrl}
+          videoPoster={property.videoPoster}
+          title={property.title}
+        />
 
         {/* Content Details Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -83,14 +59,14 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                 </span>
               </div>
               <h1 className="font-serif text-display-lg text-primary mb-4 leading-tight">
-                {property.title} — {property.bedrooms} bed, {property.bathrooms} bath
+                {property.title} — {getNeighborhoodFromAddress(property)}
               </h1>
               <div className="flex items-center gap-2 text-on-surface-variant font-sans text-body-lg">
                 <span className="material-symbols-outlined text-primary-container select-none">
                   location_on
                 </span>
                 <span>
-                  {property.address || property.neighborhood}, Alberta · Close to key business zones
+                  {property.address || getNeighborhoodFromAddress(property)}, Alberta · Close to key business zones
                 </span>
               </div>
             </header>

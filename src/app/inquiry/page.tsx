@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { mockProperties } from "@/lib/sanity";
+import { mockProperties, getNeighborhoodFromAddress } from "@/lib/sanity";
 import Footer from "@/components/Footer";
 
 function InquiryFormContent() {
@@ -29,7 +29,7 @@ function InquiryFormContent() {
       const property = mockProperties.find((p) => p.id === propertyId);
       if (property) {
         setCity(property.city.toLowerCase());
-        setRequirements(`Interested in: ${property.title} (${property.neighborhood})`);
+        setRequirements(`Interested in: ${property.title} (${getNeighborhoodFromAddress(property)})`);
       }
     }
   }, [searchParams]);
