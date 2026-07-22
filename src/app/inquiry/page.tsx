@@ -25,6 +25,12 @@ function InquiryFormContent() {
   // Check URL params for pre-fill data
   useEffect(() => {
     const propertyId = searchParams.get("property");
+    const topic = searchParams.get("topic");
+
+    if (topic === "review") {
+      setRequirements("I would like to share a guest review about my stay with StayAlberta.");
+    }
+
     if (propertyId) {
       const property = mockProperties.find((p) => p.id === propertyId);
       if (property) {
@@ -370,13 +376,25 @@ function InquiryFormContent() {
             Call our corporate desk at +1 (403) 971-9188 for immediate assistance.
           </p>
           <div className="flex justify-center gap-4">
-            <button className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer">
+            <button
+              type="submit"
+              form="featured-brochure-form-inquiry"
+              className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer"
+            >
               Download Brochure
             </button>
             <button className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer">
               Browse Properties
             </button>
           </div>
+          <form
+            id="featured-brochure-form-inquiry"
+            action="/api/brochure"
+            method="get"
+            className="hidden"
+          >
+            <input type="hidden" name="scope" value="featured" />
+          </form>
         </div>
       </section>
     </main>

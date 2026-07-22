@@ -176,8 +176,8 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
                 onChange={(e) => setPriceFilter(e.target.value)}
               >
                 <option value="All">All Prices</option>
-                <option value="Under $150/nt">Under $150/nt</option>
-                <option value="$150 - $300/nt">$150 - $300/nt</option>
+                <option value="Under $150/nt">Under $150/mo</option>
+                <option value="$150 - $300/nt">$150 - $300/mo</option>
                 <option value="$3,000+/mo">$3,000+/mo</option>
               </select>
             </div>

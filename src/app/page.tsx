@@ -1,6 +1,6 @@
 import Link from "next/link";
 import PropertyCard from "@/components/PropertyCard";
-import ReviewCard from "@/components/ReviewCard";
+import ReviewsSection from "@/components/ReviewsSection";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import { getProperties } from "@/lib/sanity";
@@ -186,7 +186,7 @@ export default async function Home() {
         </section>
 
         {/* Solutions Section */}
-        <section id="why-us" className="scroll-mt-24 bg-surface-container-low py-section-gap border-y-[0.5px] border-outline-variant">
+        <section id="why-us" className="scroll-mt-24 bg-surface-container-low py-section-gap border-t-[0.5px] border-outline-variant">
           <div className="max-w-container-max mx-auto px-margin-page">
             <div className="mb-16 text-center">
               <p className="font-sans font-semibold text-xs uppercase text-primary-container tracking-widest mb-4">
@@ -290,8 +290,10 @@ export default async function Home() {
               </div>
             </div>
 
+            <div className="border-t border-outline-variant/30" />
+
             {/* Process Steps */}
-            <div id="how-it-works" className="scroll-mt-24 pt-24 border-t border-outline-variant/30">
+            <div id="how-it-works" className="scroll-mt-24 pt-24">
               <div className="mb-16 text-center">
                 <p className="font-sans font-semibold text-xs uppercase text-primary-container tracking-widest mb-4">
                   PROCESS
@@ -356,54 +358,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Guest Experiences Section */}
-        <section className="bg-surface-container-low py-section-gap">
-          <div className="max-w-container-max mx-auto px-margin-page">
-            <div className="text-center mb-12">
-              <h2 className="font-serif text-headline-lg text-primary mb-4">
-                Guest Experiences That Speak for Themselves.
-              </h2>
-              <p className="font-sans text-body-lg text-on-surface-variant">
-                See why travellers choose our corporate housing when visiting Alberta.
-              </p>
-            </div>
-            
-            {/* Review Summary Bar */}
-            <div className="bg-surface-container-lowest hairline-border rounded-md p-6 mb-12 flex flex-col items-center justify-center max-w-sm mx-auto shadow-sm">
-              <div className="flex items-center gap-2 mb-2 border-b-2 border-error pb-1">
-                <span className="font-serif text-headline-md text-primary font-bold">Reviews</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="font-serif text-headline-md text-primary">4.9</span>
-                <div className="flex text-tertiary">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="material-symbols-outlined select-none"
-                      style={{ fontVariationSettings: '"FILL" 1' }}
-                    >
-                      star
-                    </span>
-                  ))}
-                </div>
-                <span className="font-sans text-body-md text-on-surface-variant">(127)</span>
-              </div>
-            </div>
-
-            {/* Reviews Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-grid-gutter">
-              {reviews.map((rev, index) => (
-                <ReviewCard
-                  key={index}
-                  name={rev.name}
-                  date={rev.date}
-                  rating={rev.rating}
-                  body={rev.body}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ReviewsSection initialReviews={reviews} />
 
         {/* CTA Banner Section */}
         <section className="max-w-container-max mx-auto px-margin-page py-section-gap">
@@ -422,10 +377,22 @@ export default async function Home() {
                 >
                   Inquire Now
                 </Link>
-                <button className="border-[0.5px] border-primary-container text-primary-container px-10 py-4 font-sans font-semibold text-sm uppercase tracking-widest hover:bg-primary-container hover:text-white transition-all rounded-sm cursor-pointer">
+                <button
+                  type="submit"
+                  form="featured-brochure-form"
+                  className="border-[0.5px] border-primary-container text-primary-container px-10 py-4 font-sans font-semibold text-sm uppercase tracking-widest hover:bg-primary-container hover:text-white transition-all rounded-sm cursor-pointer"
+                >
                   Download Brochure
                 </button>
               </div>
+              <form
+                id="featured-brochure-form"
+                action="/api/brochure"
+                method="get"
+                className="hidden"
+              >
+                <input type="hidden" name="scope" value="featured" />
+              </form>
             </div>
           </div>
         </section>
