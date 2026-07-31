@@ -49,14 +49,6 @@ export default function Navbar() {
             Contact
           </Link>
         </nav>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/inquiry"
-            className="bg-primary-container text-white px-6 py-2.5 rounded-none font-sans font-label-md text-label-md uppercase tracking-widest hover:opacity-90 transition-opacity active:scale-95 text-center"
-          >
-            Request a stay
-          </Link>
-        </div>
       </div>
     </header>
   );

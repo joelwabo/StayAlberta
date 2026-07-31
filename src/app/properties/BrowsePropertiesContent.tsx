@@ -79,14 +79,14 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
       if (property.bedrooms < minBeds) return false;
     }
 
-    // Price filter
+    // Price filter (monthly ranges)
     if (priceFilter !== "All") {
-      if (priceFilter === "Under $150/nt") {
-        if (property.pricePeriod !== "night" || property.price >= 150) return false;
-      } else if (priceFilter === "$150 - $300/nt") {
-        if (property.pricePeriod !== "night" || property.price < 150 || property.price > 300) return false;
-      } else if (priceFilter === "$3,000+/mo") {
-        if (property.pricePeriod !== "month" || property.price < 3000) return false;
+      if (priceFilter === "Under $1,500/mo") {
+        if (property.pricePeriod !== "month" || property.price >= 1500) return false;
+      } else if (priceFilter === "$1,500 - $2,000/mo") {
+        if (property.pricePeriod !== "month" || property.price < 1500 || property.price > 2000) return false;
+      } else if (priceFilter === "$2,000+/mo") {
+        if (property.pricePeriod !== "month" || property.price < 2000) return false;
       }
     }
 
@@ -171,14 +171,14 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
                 Price Range
               </label>
               <select
-                className="w-full bg-surface-container-low border-0 border-b border-outline text-on-surface p-2 focus:ring-0 focus:border-primary text-sm rounded-sm"
+                className="w-full bg-surface-container-low border-0 border-b border-outline text-on-surface pl-2 pr-8 py-2 focus:ring-0 focus:border-primary text-sm rounded-sm"
                 value={priceFilter}
                 onChange={(e) => setPriceFilter(e.target.value)}
               >
                 <option value="All">All Prices</option>
-                <option value="Under $150/nt">Under $150/mo</option>
-                <option value="$150 - $300/nt">$150 - $300/mo</option>
-                <option value="$3,000+/mo">$3,000+/mo</option>
+                <option value="Under $1,500/mo">Under $1,500/mo</option>
+                <option value="$1,500 - $2,000/mo">$1,500 - $2,000/mo</option>
+                <option value="$2,000+/mo">$2,000+/mo</option>
               </select>
             </div>
 

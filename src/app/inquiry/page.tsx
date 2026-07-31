@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { mockProperties, getNeighborhoodFromAddress } from "@/lib/sanity";
 import Footer from "@/components/Footer";
 
@@ -383,9 +384,12 @@ function InquiryFormContent() {
             >
               Download Brochure
             </button>
-            <button className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer">
+            <Link
+              href="/properties"
+              className="border border-primary-container text-primary-container px-6 py-2 rounded-sm font-sans font-semibold text-xs uppercase hover:bg-primary-container hover:text-white transition-all cursor-pointer"
+            >
               Browse Properties
-            </button>
+            </Link>
           </div>
           <form
             id="featured-brochure-form-inquiry"
