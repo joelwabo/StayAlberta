@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { mockProperties, getNeighborhoodFromAddress } from "@/lib/sanity";
 import Footer from "@/components/Footer";
 
 function InquiryFormContent() {
@@ -33,11 +32,7 @@ function InquiryFormContent() {
     }
 
     if (propertyId) {
-      const property = mockProperties.find((p) => p.id === propertyId);
-      if (property) {
-        setCity(property.city.toLowerCase());
-        setRequirements(`Interested in: ${property.title} (${getNeighborhoodFromAddress(property)})`);
-      }
+      setRequirements(`Interested in property reference: ${propertyId}`);
     }
   }, [searchParams]);
 

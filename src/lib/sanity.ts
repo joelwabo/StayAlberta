@@ -1,4 +1,4 @@
-import { createClient } from "@sanity/client";
+import { getGuestyProperties } from "@/lib/guesty";
 
 export const STANDARD_AMENITIES = [
   "Fully Stocked Kitchen",
@@ -150,22 +150,15 @@ export const mockProperties: Property[] = [
   }
 ];
 
-import { client } from "@/sanity/client";
-import { PROPERTIES_QUERY } from "@/sanity/queries";
-
-export const sanityClient = client;
-
-// Clean fetch wrapper supporting transparent local fallback
+// Listings are sourced from Guesty only.
 export async function getProperties(): Promise<Property[]> {
   try {
-    const data = await client.fetch(PROPERTIES_QUERY);
-    if (data && data.length > 0) {
-      return data as unknown as Property[];
-    }
+    const guestyProperties = await getGuestyProperties();
+    return guestyProperties;
   } catch (error) {
-    console.warn("Sanity fetch failed, falling back to mock properties:", error);
+    console.warn("Guesty fetch failed, returning no listings:", error);
   }
-  return mockProperties;
+  return [];
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | undefined> {

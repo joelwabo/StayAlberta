@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Property } from "@/lib/sanity";
+import type { Property } from "@/lib/sanity";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import dynamic from "next/dynamic";
@@ -79,14 +79,18 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
       if (property.bedrooms < minBeds) return false;
     }
 
-    // Price filter (monthly ranges)
+    // Price filter (nightly-equivalent ranges)
     if (priceFilter !== "All") {
-      if (priceFilter === "Under $1,500/mo") {
-        if (property.pricePeriod !== "month" || property.price >= 1500) return false;
-      } else if (priceFilter === "$1,500 - $2,000/mo") {
-        if (property.pricePeriod !== "month" || property.price < 1500 || property.price > 2000) return false;
-      } else if (priceFilter === "$2,000+/mo") {
-        if (property.pricePeriod !== "month" || property.price < 2000) return false;
+      const nightlyPrice = property.pricePeriod === "month"
+        ? property.price / 30
+        : property.price;
+
+      if (priceFilter === "Under $120/night") {
+        if (nightlyPrice >= 120) return false;
+      } else if (priceFilter === "$120 - $180/night") {
+        if (nightlyPrice < 120 || nightlyPrice > 180) return false;
+      } else if (priceFilter === "$180+/night") {
+        if (nightlyPrice < 180) return false;
       }
     }
 
@@ -176,9 +180,9 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
                 onChange={(e) => setPriceFilter(e.target.value)}
               >
                 <option value="All">All Prices</option>
-                <option value="Under $1,500/mo">Under $1,500/mo</option>
-                <option value="$1,500 - $2,000/mo">$1,500 - $2,000/mo</option>
-                <option value="$2,000+/mo">$2,000+/mo</option>
+                <option value="Under $120/night">Under $120/night</option>
+                <option value="$120 - $180/night">$120 - $180/night</option>
+                <option value="$180+/night">$180+/night</option>
               </select>
             </div>
 
