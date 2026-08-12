@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Property, STANDARD_AMENITIES, getNeighborhoodFromAddress } from "@/lib/sanity";
+import { Property, getNeighborhoodFromAddress } from "@/lib/sanity";
 
 interface PropertyCardProps {
   property: Property;
@@ -28,11 +28,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   // Find up to 2 amenities to display dynamically
   const displayAmenities: { text: string; icon: string }[] = [];
-  
-  const amenitiesList = [
-    ...STANDARD_AMENITIES,
-    ...(property.amenities || [])
-  ];
+
+  const amenitiesList = property.amenities || [];
 
   // 1. Try to find a WiFi amenity
   const wifiAmenity = amenitiesList.find(
@@ -66,11 +63,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   // 4. Fallbacks
   while (displayAmenities.length < 2) {
-    if (displayAmenities.length === 0) {
-      displayAmenities.push({ text: "Fibre WiFi", icon: "wifi" });
-    } else {
-      displayAmenities.push({ text: "Heated Parking", icon: "local_parking" });
-    }
+    displayAmenities.push({ text: "Not specified", icon: "info" });
   }
 
   return (

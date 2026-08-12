@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
-import { getPropertyBySlug, STANDARD_AMENITIES, getNeighborhoodFromAddress } from "@/lib/sanity";
+import { getPropertyBySlug, getNeighborhoodFromAddress } from "@/lib/sanity";
 import PropertyGallery from "@/components/PropertyGallery";
+import BookingAvailabilityControls from "@/components/BookingAvailabilityControls";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -20,6 +21,8 @@ export default async function PropertyDetailPage({ params }: PageProps) {
   const rateLabel = isMonthly ? "/ month" : "/ night";
   const breakDownMultiplier = isMonthly ? "1 month" : "30 nights";
   const calculatedTotal = isMonthly ? property.price : property.price * 30;
+  const guestyAmenities = property.amenities || [];
+  const maxGuests = Math.max(1, property.guests || 1);
 
   return (
     <>
@@ -134,11 +137,9 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               <h2 className="font-serif text-headline-lg text-primary mb-6 border-t border-outline-variant/30 pt-8">
                 Amenities
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                {[
-                  ...STANDARD_AMENITIES,
-                  ...(property.amenities || [])
-                ].map((amenity, idx) => {
+              {guestyAmenities.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                  {guestyAmenities.map((amenity, idx) => {
                   let iconName = "check_circle";
                   const lower = amenity.toLowerCase();
                   if (lower.includes("wifi") || lower.includes("internet")) iconName = "wifi";
@@ -160,8 +161,13 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                       <span className="font-sans text-body-lg text-on-surface">{amenity}</span>
                     </div>
                   );
-                })}
-              </div>
+                  })}
+                </div>
+              ) : (
+                <p className="font-sans text-body-md text-on-surface-variant">
+                  No amenities were provided by Guesty for this property.
+                </p>
+              )}
             </section>
 
             {/* Use-Case Tags */}
@@ -196,63 +202,11 @@ export default async function PropertyDetailPage({ params }: PageProps) {
               <div className="text-on-surface-variant font-sans font-semibold text-xs mb-8 uppercase tracking-widest">
                 All-inclusive · No platform fees
               </div>
-              
-              {/* Form Fields */}
-              <div className="space-y-4 mb-8">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex flex-col">
-                    <label className="font-sans font-semibold text-xs text-on-surface-variant uppercase mb-1">
-                      Check-in
-                    </label>
-                    <input
-                      className="bg-[#F0F2F0] border-none border-b border-outline px-3 py-2.5 font-sans text-sm text-on-surface rounded-sm focus:outline-none focus:border-primary"
-                      type="text"
-                      defaultValue="Jul 1, 2025"
-                      readOnly
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="font-sans font-semibold text-xs text-on-surface-variant uppercase mb-1">
-                      Check-out
-                    </label>
-                    <input
-                      className="bg-[#F0F2F0] border-none border-b border-outline px-3 py-2.5 font-sans text-sm text-on-surface rounded-sm focus:outline-none focus:border-primary"
-                      type="text"
-                      defaultValue="Aug 1, 2025"
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <label className="font-sans font-semibold text-xs text-on-surface-variant uppercase mb-1">
-                    Guests
-                  </label>
-                  <div className="bg-[#F0F2F0] border-none border-b border-outline px-3 py-2.5 flex justify-between items-center rounded-sm">
-                    <span className="font-sans text-sm text-on-surface">1 professional</span>
-                    <span className="material-symbols-outlined text-outline select-none">group</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Action Buttons */}
-              <Link
-                href={`/inquiry?property=${property.id}`}
-                className="w-full bg-primary-container text-white px-8 py-4 font-sans font-semibold text-xs uppercase tracking-widest mb-4 hover:opacity-90 transition-opacity active:scale-95 flex justify-center items-center gap-2 rounded-sm text-center"
-              >
-                Request this property{" "}
-                <span className="material-symbols-outlined text-[18px] select-none">
-                  north_east
-                </span>
-              </Link>
-              <Link
-                href={`/inquiry?property=${property.id}&question=true`}
-                className="w-full bg-white text-primary-container border-[0.5px] border-primary-container font-sans font-semibold text-xs uppercase tracking-widest py-4 mb-8 hover:bg-surface-container transition-colors rounded-sm text-center block"
-              >
-                Ask a question
-              </Link>
+              <BookingAvailabilityControls listingId={property.id} maxGuests={maxGuests} />
 
               {/* Price Breakdown */}
-              <div className="space-y-3 pt-6 border-t border-outline-variant/30 font-sans text-sm">
+              <div className="space-y-3 pt-6 mt-8 border-t border-outline-variant/30 font-sans text-sm">
                 <div className="flex justify-between text-on-surface-variant">
                   <span>${property.price.toLocaleString()} × {breakDownMultiplier}</span>
                   <span>${calculatedTotal.toLocaleString()}</span>

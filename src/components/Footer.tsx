@@ -1,29 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getProperties, Property, mockProperties } from "@/lib/sanity";
 
 interface FooterProps {
   minimal?: boolean;
 }
 
 export default function Footer({ minimal = false }: FooterProps) {
-  const [properties, setProperties] = useState<Property[]>(mockProperties);
-
-  useEffect(() => {
-    if (minimal) return;
-    let isMounted = true;
-    getProperties().then((data) => {
-      if (isMounted) {
-        setProperties(data);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [minimal]);
-
   if (minimal) {
     return (
       <footer className="bg-surface-container-highest border-t border-outline-variant py-6 px-margin-desktop text-caption flex flex-col items-center justify-center gap-3 text-on-surface-variant font-sans text-xs text-center">
@@ -40,21 +23,9 @@ export default function Footer({ minimal = false }: FooterProps) {
     );
   }
 
-  // Calculate counts dynamically based on active listings
-  const activeProperties = properties.filter((p) => p.isActive !== false);
-
-  // Generate unique list of cities combining standard ones and any new ones in the dataset
+  // Static city links to keep footer client-safe.
   const defaultCities = ["Calgary", "Edmonton", "Red Deer", "Penhold", "Sylvan Lake"];
-  const citiesListSet = new Set<string>();
-  defaultCities.forEach((c) => citiesListSet.add(c));
-  activeProperties.forEach((p) => {
-    if (p.city) {
-      const normalizedCityName =
-        defaultCities.find((dc) => dc.toLowerCase() === p.city.toLowerCase()) || p.city;
-      citiesListSet.add(normalizedCityName);
-    }
-  });
-  const citiesList = Array.from(citiesListSet);
+  const citiesList = defaultCities;
 
   return (
     <footer className="bg-surface-container-lowest border-t-[0.5px] border-outline-variant font-sans mt-auto text-center">
@@ -76,16 +47,13 @@ export default function Footer({ minimal = false }: FooterProps) {
           </h4>
           <nav className="flex flex-col items-center gap-2 text-on-surface-variant text-body-md">
             {citiesList.map((cityName) => {
-              const count = activeProperties.filter(
-                (p) => p.city?.toLowerCase() === cityName.toLowerCase()
-              ).length;
               return (
                 <Link
                   key={cityName}
                   href={`/properties?city=${encodeURIComponent(cityName)}`}
                   className="hover:underline hover:text-primary-container transition-colors"
                 >
-                  {cityName} ({count})
+                  {cityName}
                 </Link>
               );
             })}

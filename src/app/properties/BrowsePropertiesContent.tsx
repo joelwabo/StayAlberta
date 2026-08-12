@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Property } from "@/lib/sanity";
+import type { Property } from "@/lib/sanity";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import dynamic from "next/dynamic";
@@ -79,14 +79,18 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
       if (property.bedrooms < minBeds) return false;
     }
 
-    // Price filter
+    // Price filter (nightly-equivalent ranges)
     if (priceFilter !== "All") {
-      if (priceFilter === "Under $150/nt") {
-        if (property.pricePeriod !== "night" || property.price >= 150) return false;
-      } else if (priceFilter === "$150 - $300/nt") {
-        if (property.pricePeriod !== "night" || property.price < 150 || property.price > 300) return false;
-      } else if (priceFilter === "$3,000+/mo") {
-        if (property.pricePeriod !== "month" || property.price < 3000) return false;
+      const nightlyPrice = property.pricePeriod === "month"
+        ? property.price / 30
+        : property.price;
+
+      if (priceFilter === "Under $120/night") {
+        if (nightlyPrice >= 120) return false;
+      } else if (priceFilter === "$120 - $180/night") {
+        if (nightlyPrice < 120 || nightlyPrice > 180) return false;
+      } else if (priceFilter === "$180+/night") {
+        if (nightlyPrice < 180) return false;
       }
     }
 
@@ -171,14 +175,14 @@ function BrowsePropertiesInner({ initialProperties }: BrowsePropertiesContentPro
                 Price Range
               </label>
               <select
-                className="w-full bg-surface-container-low border-0 border-b border-outline text-on-surface p-2 focus:ring-0 focus:border-primary text-sm rounded-sm"
+                className="w-full bg-surface-container-low border-0 border-b border-outline text-on-surface pl-2 pr-8 py-2 focus:ring-0 focus:border-primary text-sm rounded-sm"
                 value={priceFilter}
                 onChange={(e) => setPriceFilter(e.target.value)}
               >
                 <option value="All">All Prices</option>
-                <option value="Under $150/nt">Under $150/mo</option>
-                <option value="$150 - $300/nt">$150 - $300/mo</option>
-                <option value="$3,000+/mo">$3,000+/mo</option>
+                <option value="Under $120/night">Under $120/night</option>
+                <option value="$120 - $180/night">$120 - $180/night</option>
+                <option value="$180+/night">$180+/night</option>
               </select>
             </div>
 
