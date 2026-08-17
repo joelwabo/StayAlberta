@@ -93,12 +93,11 @@ export default function BookingAvailabilityControls({
           response.status === 409
             ? `These dates are no longer available. An existing reservation already covers ${reservedFrom} to ${reservedTo}.`
             : null;
-        const apiReason = payload.error || payload.message || "Reservation service temporarily unavailable.";
 
         setState("error");
         setMessage(
           conflictMessage ||
-            `Unable to confirm reservation for your selected stay (${checkIn} to ${checkOut}). ${apiReason}`
+            `Unable to confirm reservation for your selected stay (${checkIn} to ${checkOut}).`
         );
         return;
       }

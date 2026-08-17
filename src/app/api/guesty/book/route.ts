@@ -81,13 +81,11 @@ export async function POST(request: Request) {
       message: `Reservation confirmed for ${checkIn} to ${checkOut}.`,
     });
   } catch (error) {
+    console.error("Guesty booking failed:", error);
     return NextResponse.json(
       {
         confirmed: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Reservation confirmation failed.",
+        error: "Reservation service temporarily unavailable. Please try again in a moment.",
       },
       { status: 500 }
     );

@@ -1,4 +1,5 @@
 import type { Property } from "@/lib/sanity";
+import { Redis } from "@upstash/redis";
 
 interface GuestyTokenResponse {
   access_token?: string;
@@ -14,7 +15,16 @@ let missingCredentialsWarned = false;
 const GUESTY_TOKEN_URL = process.env.GUESTY_TOKEN_URL || "https://open-api.guesty.com/oauth2/token";
 const GUESTY_API_BASE_URL = (process.env.GUESTY_API_BASE_URL || "https://open-api.guesty.com/v1").replace(/\/+$/, "");
 const GUESTY_LISTINGS_LIMIT = Number(process.env.GUESTY_LISTINGS_LIMIT || "50");
-const GUESTY_ACCESS_TOKEN = process.env.GUESTY_ACCESS_TOKEN;
+// Trim to guard against stray whitespace/newlines from pasting into env var UIs, which breaks the Authorization header.
+const GUESTY_ACCESS_TOKEN = process.env.GUESTY_ACCESS_TOKEN?.trim() || undefined;
+
+const TOKEN_CACHE_KEY = "guesty:token";
+const COOLDOWN_KEY = "guesty:token:cooldown";
+
+// Reuse one token across all serverless instances instead of each cold start requesting its own, which trips Guesty's rate limit.
+const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 function hasGuestyCredentials(): boolean {
   return Boolean(
@@ -52,6 +62,9 @@ async function requestToken(): Promise<string> {
       : "";
     // Back off for 5 minutes on failure so repeated requests don't keep hammering a rate-limited endpoint.
     tokenFailureCooldownUntil = Date.now() + 5 * 60 * 1000;
+    if (redis) {
+      await redis.set(COOLDOWN_KEY, tokenFailureCooldownUntil, { px: 5 * 60 * 1000 }).catch(() => {});
+    }
     throw new Error(`Guesty token request failed (${response.status}): ${body}.${hint}`);
   }
 
@@ -61,17 +74,41 @@ async function requestToken(): Promise<string> {
   }
 
   const ttl = Math.max(60, data.expires_in || 3600);
-  cachedToken = {
-    value: data.access_token,
-    expiresAt: Date.now() + ttl * 1000,
-  };
+  const accessToken = data.access_token.trim();
+  const expiresAt = Date.now() + ttl * 1000;
+  cachedToken = { value: accessToken, expiresAt };
 
-  return data.access_token;
+  if (redis) {
+    // TTL slightly under actual expiry so a stale shared entry never outlives the real token.
+    await redis.set(TOKEN_CACHE_KEY, { value: accessToken, expiresAt }, { px: Math.max(1000, ttl * 1000 - 30_000) }).catch(() => {});
+  }
+
+  return accessToken;
 }
 
 async function getGuestyAccessToken(): Promise<string> {
   if (cachedToken && Date.now() < cachedToken.expiresAt - 60_000) {
     return cachedToken.value;
+  }
+
+  if (redis) {
+    try {
+      const shared = await redis.get<{ value: string; expiresAt: number }>(TOKEN_CACHE_KEY);
+      if (shared && Date.now() < shared.expiresAt - 60_000) {
+        cachedToken = shared;
+        return shared.value;
+      }
+
+      const cooldown = await redis.get<number>(COOLDOWN_KEY);
+      if (cooldown && Date.now() < cooldown) {
+        if (GUESTY_ACCESS_TOKEN) {
+          return GUESTY_ACCESS_TOKEN;
+        }
+        throw new Error("Guesty token endpoint is in cooldown after a recent failure");
+      }
+    } catch (error) {
+      console.warn("Guesty shared token cache read failed, falling back to per-instance refresh:", error);
+    }
   }
 
   const clientId = process.env.GUESTY_CLIENT_ID;
