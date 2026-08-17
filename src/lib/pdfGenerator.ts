@@ -26,8 +26,7 @@ export async function generatePropertyBrochureHTML(property: Property): Promise<
     .slice(0, 4)
     .map(
       (img, idx) => {
-        const imageUrl = buildSanityImageUrl(img, 500, idx === 0 ? 300 : 150);
-        const proxiedUrl = proxyImageUrl(imageUrl);
+        const proxiedUrl = proxyImageUrl(img);
         return `<div style="margin-bottom: 16px; text-align: center;">
       <img
         src="${proxiedUrl}"
