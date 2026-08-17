@@ -7,6 +7,7 @@ interface GuestyTokenResponse {
 }
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
+let tokenRequestPromise: Promise<string> | null = null;
 let missingCredentialsWarned = false;
 
 const GUESTY_TOKEN_URL = process.env.GUESTY_TOKEN_URL || "https://open-api.guesty.com/oauth2/token";
@@ -66,12 +67,34 @@ async function requestToken(): Promise<string> {
 }
 
 async function getGuestyAccessToken(): Promise<string> {
-  if (GUESTY_ACCESS_TOKEN) {
-    return GUESTY_ACCESS_TOKEN;
-  }
-
   if (cachedToken && Date.now() < cachedToken.expiresAt - 60_000) {
     return cachedToken.value;
+  }
+
+  const clientId = process.env.GUESTY_CLIENT_ID;
+  const clientSecret = process.env.GUESTY_CLIENT_SECRET;
+
+  if (clientId && clientSecret) {
+    // Dedupe concurrent refresh calls so a burst of requests doesn't spam the token endpoint and trip rate limits.
+    if (!tokenRequestPromise) {
+      tokenRequestPromise = requestToken().finally(() => {
+        tokenRequestPromise = null;
+      });
+    }
+
+    try {
+      return await tokenRequestPromise;
+    } catch (error) {
+      if (GUESTY_ACCESS_TOKEN) {
+        console.warn("Guesty token refresh failed, falling back to static GUESTY_ACCESS_TOKEN:", error);
+        return GUESTY_ACCESS_TOKEN;
+      }
+      throw error;
+    }
+  }
+
+  if (GUESTY_ACCESS_TOKEN) {
+    return GUESTY_ACCESS_TOKEN;
   }
 
   return requestToken();
