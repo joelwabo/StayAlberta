@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
 import { getProperties } from "@/lib/sanity";
 
-export const revalidate = 60; // Revalidate every minute
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const properties = await getProperties();
