@@ -8,6 +8,7 @@ interface GuestyTokenResponse {
 
 let cachedToken: { value: string; expiresAt: number } | null = null;
 let tokenRequestPromise: Promise<string> | null = null;
+let tokenFailureCooldownUntil = 0;
 let missingCredentialsWarned = false;
 
 const GUESTY_TOKEN_URL = process.env.GUESTY_TOKEN_URL || "https://open-api.guesty.com/oauth2/token";
@@ -49,6 +50,8 @@ async function requestToken(): Promise<string> {
     const hint = response.status === 429
       ? " Token quota hit. Reuse an existing token with GUESTY_ACCESS_TOKEN in .env.local."
       : "";
+    // Back off for 5 minutes on failure so repeated requests don't keep hammering a rate-limited endpoint.
+    tokenFailureCooldownUntil = Date.now() + 5 * 60 * 1000;
     throw new Error(`Guesty token request failed (${response.status}): ${body}.${hint}`);
   }
 
@@ -75,6 +78,13 @@ async function getGuestyAccessToken(): Promise<string> {
   const clientSecret = process.env.GUESTY_CLIENT_SECRET;
 
   if (clientId && clientSecret) {
+    if (Date.now() < tokenFailureCooldownUntil) {
+      if (GUESTY_ACCESS_TOKEN) {
+        return GUESTY_ACCESS_TOKEN;
+      }
+      throw new Error("Guesty token endpoint is in cooldown after a recent failure");
+    }
+
     // Dedupe concurrent refresh calls so a burst of requests doesn't spam the token endpoint and trip rate limits.
     if (!tokenRequestPromise) {
       tokenRequestPromise = requestToken().finally(() => {
