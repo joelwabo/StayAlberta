@@ -3,7 +3,7 @@ import PropertyCard from "@/components/PropertyCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import Footer from "@/components/Footer";
 import SearchBar from "@/components/SearchBar";
-import { getProperties } from "@/lib/sanity";
+import { getProperties } from "@/lib/guesty";
 
 export const dynamic = "force-dynamic";
 

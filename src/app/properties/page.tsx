@@ -1,5 +1,5 @@
 import BrowsePropertiesContent from "./BrowsePropertiesContent";
-import { getProperties } from "@/lib/sanity";
+import { getProperties } from "@/lib/guesty";
 
 export const dynamic = "force-dynamic";
 

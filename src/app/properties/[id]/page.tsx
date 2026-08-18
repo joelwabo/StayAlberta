@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
-import { getPropertyBySlug, getNeighborhoodFromAddress } from "@/lib/sanity";
+import { getPropertyBySlug, getNeighborhoodFromAddress } from "@/lib/guesty";
 import PropertyGallery from "@/components/PropertyGallery";
 import BookingAvailabilityControls from "@/components/BookingAvailabilityControls";
 

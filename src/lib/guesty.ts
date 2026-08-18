@@ -1,5 +1,82 @@
-import type { Property } from "@/lib/sanity";
 import { Redis } from "@upstash/redis";
+
+export interface Property {
+  id: string;
+  title: string;
+  slug: string;
+  city: string;
+  neighborhood?: string;
+  address?: string;
+  price: number;
+  pricePeriod: "night" | "month";
+  bedrooms: number;
+  bathrooms: number;
+  sqft?: number;
+  guests: number;
+  availableDate: string;
+  availableNow: boolean;
+  isActive?: boolean;
+  tag: string;
+  description: string;
+  images: string[];
+  videoUrl?: string;
+  videoPoster?: string;
+  amenities?: string[];
+  idealFor: string[];
+}
+
+export const STANDARD_AMENITIES = [
+  "Fully Stocked Kitchen",
+  "A/C + Heat",
+  "Smart TV/Netflix",
+  "Fibre Wifi",
+];
+
+export function getNeighborhoodFromAddress(property: { address?: string; city?: string }): string {
+  if (!property.address) {
+    return property.city || "Unknown Location";
+  }
+
+  const addr = property.address.toLowerCase();
+  const city = property.city || "";
+
+  if (addr.includes("10 ave sw") || addr.includes("beltline")) {
+    return "Calgary | Beltline District";
+  }
+  if (addr.includes("jasper ave") || addr.includes("t5j")) {
+    return "Downtown Edmonton | Institutional Core";
+  }
+  if (addr.includes("48 st") || addr.includes("t4n") || addr.includes("red deer")) {
+    if (addr.includes("48 st") && city.toLowerCase().includes("red deer")) {
+      return "Red Deer | Regional Hub";
+    }
+  }
+
+  const parts = property.address.split(",").map((part) => part.trim());
+  if (parts.length >= 2) {
+    const street = parts[0];
+    const parsedCity = parts[1];
+    const district = street.replace(/^\d+\s+/, "");
+    return `${parsedCity} | ${district}`;
+  }
+
+  return property.city ? `${property.city} | Area` : "Alberta";
+}
+
+export async function getProperties(): Promise<Property[]> {
+  try {
+    return await getGuestyProperties();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Guesty properties unavailable; rendering an empty listing result: ${message}`);
+    return [];
+  }
+}
+
+export async function getPropertyBySlug(slug: string): Promise<Property | undefined> {
+  const properties = await getProperties();
+  return properties.find((property) => property.slug === slug || property.id === slug);
+}
 
 interface GuestyTokenResponse {
   access_token?: string;
@@ -746,7 +823,6 @@ export async function getGuestyProperties(): Promise<Property[]> {
           });
           return [listingId, result.available] as const;
         } catch {
-          // Fail closed: unknown listing availability should not be advertised as available now.
           return [listingId, false] as const;
         }
       })

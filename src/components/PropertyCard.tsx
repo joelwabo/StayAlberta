@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Property, getNeighborhoodFromAddress } from "@/lib/sanity";
+import { Property, getNeighborhoodFromAddress } from "@/lib/guesty";
 
 interface PropertyCardProps {
   property: Property;

@@ -1,4 +1,4 @@
-import { Property, STANDARD_AMENITIES, getNeighborhoodFromAddress } from '@/lib/sanity';
+import { Property, STANDARD_AMENITIES, getNeighborhoodFromAddress } from '@/lib/guesty';
 
 function proxyImageUrl(url: string): string {
   if (!url) return '';

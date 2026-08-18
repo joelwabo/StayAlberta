@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { getNeighborhoodFromAddress, getProperties, STANDARD_AMENITIES } from "@/lib/sanity";
+import { getNeighborhoodFromAddress, getProperties, STANDARD_AMENITIES } from "@/lib/guesty";
 
 function formatPrice(price: number, period: "night" | "month"): string {
   if (period === "month") {

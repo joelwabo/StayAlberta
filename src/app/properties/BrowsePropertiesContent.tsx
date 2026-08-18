@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import type { Property } from "@/lib/sanity";
+import type { Property } from "@/lib/guesty";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import dynamic from "next/dynamic";
